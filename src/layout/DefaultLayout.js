@@ -6,15 +6,15 @@ import AppSidebar from "../components/AppSidebar";
 
 const DefaultLayout = () => {
     return (
-        <div>
+        <>
             <div className="wrapper d-flex flex-column min-vh-100">
                 <AppHeader/>
-                <AppSidebar/>
+                {/*<AppSidebar/>*/}
                 <div className="body flex-grow-1">
                     <AppContent/>
                 </div>
             </div>
-        </div>
+        </>
     )
 }
 

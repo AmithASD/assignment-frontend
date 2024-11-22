@@ -26,7 +26,7 @@ const AppContent = () => {
                     <Route path="/" element={<Navigate to="products" replace />} />
                     <Route path="/products" element={<Navigate to="products" replace />} />
                     <Route path="/add-products" element={<Navigate to="AddProducts" replace />} />
-                    <Route path="/edit-products" element={<Navigate to="EditProducts" replace />} />
+                    <Route path="/edit-product/" element={<Navigate to="EditProducts" replace />} />
                     <Route path="/favorite" element={<Navigate to="FavoriteProducts" replace />} />
                     <Route path="/search" element={<Navigate to="SearchProducts" replace />} />
                     <Route path="/delete" element={<Navigate to="DeleteProducts" replace />} />

@@ -7,6 +7,8 @@ import {BrowserRouter, Route, Routes} from "react-router-dom";
 // import DeleteProduct from "./components/deletProduct";
 import React from 'react'
 import DefaultLayout from "./layout/DefaultLayout";
+import Login from "./pages/auth/login";
+import Register from "./pages/auth/register";
 //
 // const Products = React.lazy(() => import('./pages/main/products'));
 // const AddProduct = React.lazy(() => import('./pages/add/AddProduct'));
@@ -28,6 +30,8 @@ function App() {
                 {/*<Route path="/delete" element={<DeleteProduct/>}/>*/}
 
                 <Route path="*" name="Products" element={<DefaultLayout />} />
+                <Route path="/login"  element={<Login />} />
+                <Route path="/register"  element={<Register />} />
             </Routes>
         </BrowserRouter>
     );

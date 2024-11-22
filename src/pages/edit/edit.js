@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     CForm,
     CFormLabel,
@@ -13,25 +13,68 @@ import {
     CCardImage,
     CCardFooter,
 } from '@coreui/react';
+import API_ENDPOINT from "../../apis/config";
+import {useParams} from "react-router-dom";
+import {EDIT_PRODUCTS, FETCH_PRODUCTS, SAVE_PRODUCT} from "../../apis/endpoints";
 
 const EditProduct = () => {
     // Example data
-    const [productData, setProductData] = useState({
-        sku: '#CA354',
-        name: 'Product-name',
-        qty: 25,
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Eget ut lectus a risus a nibh massa ut leo.',
-        images: [
-            { id: 1, src: '/path/to/image1.jpg', isMain: true },
-            { id: 2, src: '/path/to/image2.jpg', isMain: false },
-            { id: 3, src: '/path/to/image3.jpg', isMain: false },
-        ],
+
+    const {id} = useParams();
+    const [loading, setLoading] = useState(true);
+    const [productData, setProductData] = useState('');
+    const [formData, setFormData] = useState({
+        sku: '',
+        name: '',
+        qty: '',
+        description: '',
+        images: null,
     });
 
-    // Handle input change
+    const fetchProductDataById = async () => {
+        try {
+            const response = await API_ENDPOINT.get(`${FETCH_PRODUCTS}/${id}`);
+            setProductData(response.data);
+            console.log('productData edit  ===============>>>', productData)
+            setLoading(false);
+        } catch (error) {
+            console.error("Error fetching product data:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchProductDataById();
+    }, [id]);
+
+    if (!productData) {
+        return <p>Loading...</p>;
+    }
+
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setProductData({ ...productData, [name]: value });
+        const {name, value} = e.target;
+        setProductData((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
+    };
+
+    // Handle save changes
+    const handleSaveChanges = async (e) => {
+        e.preventDefault();
+
+        try {
+            const response = await API_ENDPOINT.post(`${EDIT_PRODUCTS}/${id}`, productData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            });
+            console.log('Product updated successfully:', response.data);
+            alert('Product updated successfully!');
+            setLoading(false);
+        } catch (error) {
+            console.error('Error updating product:', error);
+            alert('Failed to update product. Please try again.');
+        }
     };
 
     // Handle set main image
@@ -39,7 +82,7 @@ const EditProduct = () => {
         setProductData({
             ...productData,
             images: productData.images.map((img) =>
-                img.id === id ? { ...img, isMain: true } : { ...img, isMain: false }
+                img.id === id ? {...img, isMain: true} : {...img, isMain: false}
             ),
         });
     };
@@ -52,18 +95,26 @@ const EditProduct = () => {
         });
     };
 
-    // Handle save changes
-    const handleSaveChanges = () => {
-        console.log('Product updated:', productData);
-        // Add API integration here to save the changes
+    // Handle file upload change
+    const handleFileChange = (e) => {
+        const files = Array.from(e.target.files);
+        console.log("Selected files:", files);
+        setFormData((prevData) => ({
+            ...prevData,
+            images: files,
+        }));
     };
+
+    if (loading) {
+        return <> Loading.....</>
+    }
 
     return (
         <CContainer>
             <h1>
-                PRODUCTS <span style={{ color: 'blue' }}>{'>'}</span> Edit product
+                PRODUCTS <span style={{color: 'blue'}}>{'>'}</span> Edit product
             </h1>
-            <CForm>
+            <CForm onSubmit={handleSaveChanges}>
                 <CRow className="mb-3">
                     <CCol md={6}>
                         <CFormLabel htmlFor="sku">SKU</CFormLabel>
@@ -73,6 +124,7 @@ const EditProduct = () => {
                             name="sku"
                             value={productData.sku}
                             readOnly
+                            // onChange={handleChange}
                         />
                     </CCol>
                 </CRow>
@@ -114,29 +166,31 @@ const EditProduct = () => {
                     <CCol>
                         <CFormLabel>Product Images</CFormLabel>
                         <div className="d-flex flex-wrap">
-                            {productData.images.map((image) => (
-                                <CCard key={image.id} style={{ width: '100px', margin: '0 10px' }}>
-                                    <CCardImage orientation="top" src={image.src} alt="Product" />
+                            {/*{productData.images.map((image) => (*/}
+                                <CCard key={productData.id} style={{width: '100px', margin: '0 10px'}}>
+                                    <CCardImage orientation="top" src={productData.src} alt="Product"/>
                                     <CCardBody className="text-center">
                                         <CButton
-                                            color={image.isMain ? 'success' : 'primary'}
+                                            color={productData.isMain ? 'success' : 'primary'}
                                             size="sm"
-                                            onClick={() => handleSetMainImage(image.id)}
+                                            onClick={() => handleSetMainImage(productData.id)}
+                                            onChange={handleFileChange}
                                         >
-                                            {image.isMain ? 'Main Image' : 'Set as Main'}
+                                            {productData.isMain ? 'Main Image' : 'Set as Main'}
                                         </CButton>
                                     </CCardBody>
                                     <CCardFooter>
                                         <CButton
                                             color="danger"
                                             size="sm"
-                                            onClick={() => handleRemoveImage(image.id)}
+                                            onClick={() => handleRemoveImage(productData.id)}
+                                            onChange={handleFileChange}
                                         >
                                             Remove
                                         </CButton>
                                     </CCardFooter>
                                 </CCard>
-                            ))}
+                            {/*))}*/}
                         </div>
                         <p className="mt-2">
                             <CButton color="link">Edit Images</CButton>
@@ -145,7 +199,7 @@ const EditProduct = () => {
                 </CRow>
                 <CRow>
                     <CCol>
-                        <CButton color="primary" onClick={handleSaveChanges}>
+                        <CButton color="primary" type='submit'>
                             Save changes
                         </CButton>
                     </CCol>
